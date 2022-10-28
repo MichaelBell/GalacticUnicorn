@@ -84,7 +84,7 @@ graphics.set_font("bitmap8")
 
 light = 20
 old_day = 0
-old_hour = 0
+old_hour = 4
 utc_offset = 0
 
 up_button = machine.Pin(GalacticUnicorn.SWITCH_VOLUME_UP, machine.Pin.IN, machine.Pin.PULL_UP)
@@ -109,9 +109,9 @@ while True:
     if light < 10:
         graphics.set_pen(clear_pen)
         graphics.clear()
-        galactic.set_brightness(0.1)
+        galactic.set_brightness(0.04)
     else:
-        galactic.set_brightness(0.02 * light)
+        galactic.set_brightness(0.014 * light)
         draw_rainbow()
     
     hr = "{:02}".format(hour)

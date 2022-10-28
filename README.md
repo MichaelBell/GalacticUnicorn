@@ -1,6 +1,6 @@
 # Galactic Unicorn scripts
 
-For networked examples you need to make a secrets.py script which looks like:
+For networked examples you need to make a `secrets.py` script which looks like:
 ```
 WIFI_SSID = "..."
 WIFI_PASSWORD = "..." 

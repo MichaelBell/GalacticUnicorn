@@ -13,7 +13,7 @@ graphics = PicoGraphics(DISPLAY)
 width = GalacticUnicorn.WIDTH
 height = GalacticUnicorn.HEIGHT
 
-def get_time():
+def sync_time():
     # Start connection
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
@@ -28,7 +28,7 @@ def get_time():
         print('waiting for connection...')
         time.sleep(1)
 
-    if max_wait > 0:
+    if max_wait > 0 and wlan.status() >= 3:
         print("Connected")
 
         try:
@@ -86,6 +86,7 @@ light = 20
 old_day = 0
 old_hour = 4
 utc_offset = 0
+brightness_adjust = 1.0
 
 up_button = machine.Pin(GalacticUnicorn.SWITCH_VOLUME_UP, machine.Pin.IN, machine.Pin.PULL_UP)
 down_button = machine.Pin(GalacticUnicorn.SWITCH_VOLUME_DOWN, machine.Pin.IN, machine.Pin.PULL_UP)
@@ -101,6 +102,18 @@ up_button.irq(trigger=machine.Pin.IRQ_FALLING, handler=adjust_utc_offset)
 down_button.irq(trigger=machine.Pin.IRQ_FALLING, handler=adjust_utc_offset)
 
 while True:
+    if galactic.is_pressed(GalacticUnicorn.SWITCH_BRIGHTNESS_UP):
+        brightness_adjust *= 1.05
+
+    if galactic.is_pressed(GalacticUnicorn.SWITCH_BRIGHTNESS_DOWN):
+        brightness_adjust *= 0.95
+        
+    if galactic.is_pressed(GalacticUnicorn.SWITCH_A):
+        sync_time()
+    
+    if galactic.is_pressed(GalacticUnicorn.SWITCH_D):
+        brightness_adjust = 1.0
+
     year, month, day, hour, minute, second, _, _ = time.localtime()
     
     hour = (hour + utc_offset) % 24
@@ -109,9 +122,9 @@ while True:
     if light < 10:
         graphics.set_pen(clear_pen)
         graphics.clear()
-        galactic.set_brightness(0.04)
+        galactic.set_brightness(0.04 * brightness_adjust)
     else:
-        galactic.set_brightness(0.014 * light)
+        galactic.set_brightness(0.014 * light * brightness_adjust)
         draw_rainbow()
     
     hr = "{:02}".format(hour)
@@ -126,7 +139,7 @@ while True:
     # Get time at start (after first draw), and at 5am every day
     if old_hour != hour:
         if old_hour == 4 and old_day != day:
-            get_time()
+            sync_time()
             old_day = day
         
         old_hour = hour
